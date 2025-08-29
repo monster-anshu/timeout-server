@@ -34,9 +34,6 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/timeout-server .
 
-# Copy setup script if needed
-COPY --from=builder /app/setup-limits.sh .
-
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app
 
