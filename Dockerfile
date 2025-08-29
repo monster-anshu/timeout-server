@@ -4,7 +4,7 @@
 FROM golang:1.24-alpine AS builder
 
 # Install git and ca-certificates (needed for go mod download)
-RUN apk add --no-cache
+RUN apk add --no-cache git ca-certificates
 
 # Set working directory
 WORKDIR /app
@@ -13,7 +13,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 # Download dependencies disabled ssl verification
-RUN go mod download -insecure
+RUN go mod download
 
 # Copy source code
 COPY . .
