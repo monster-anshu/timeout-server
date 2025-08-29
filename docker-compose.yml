@@ -12,7 +12,7 @@ services:
       - "traefik.http.services.timeout.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.timeout-strip.stripprefix.prefixes=/timeout"
       - "traefik.http.routers.timeout.middlewares=timeout-strip"
-      - "traefik.http.routers.snappy.tls.certresolver=tlsResolver"
+      - "traefik.http.routers.timeout.tls.certresolver=tlsResolver"
 
 networks:
   proxy:
