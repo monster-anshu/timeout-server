@@ -5,8 +5,7 @@ services:
     build: .
     ports:
       - "8080:8080"
-    # Method 1: Direct CLI flags
-    command: ["./timeout-server", "--port=:8080", "--min-timeout=500ms", "--max-timeout=5s", "--enable-metrics=true", "--enable-logging=true"]
+    command: ["./timeout-server", "--port=:8080", "--min-timeout=5s", "--max-timeout=12s", "--enable-metrics=true", "--enable-logging=true"]
     healthcheck:
       test: ["CMD", "/bin/sh", "-c", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8080' || exit 1"]
       interval: 30s
@@ -14,21 +13,17 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Alternative service using environment variables
-  timeout-server-env:
-    build: .
-    ports:
-      - "8081:8081"
-    environment:
-      - PORT=8081
-      - MIN_TIMEOUT=1s
-      - MAX_TIMEOUT=10s
-      - ENABLE_METRICS=true
-      - ENABLE_LOGGING=true
-    command: ["./timeout-server", "--port=:${PORT}", "--min-timeout=${MIN_TIMEOUT}", "--max-timeout=${MAX_TIMEOUT}", "--enable-metrics=${ENABLE_METRICS}", "--enable-logging=${ENABLE_LOGGING}"]
-    healthcheck:
-      test: ["CMD", "/bin/sh", "-c", "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8081' || exit 1"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-    restart: unless-stopped
+    networks:
+      proxy:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.timeout.entrypoints=websecure"
+      - "traefik.http.routers.timeout.rule=PathPrefix(`timeout`)"
+      - "traefik.http.services.timeout.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.timeout-strip.stripprefix.prefixes=timeout"
+      - "traefik.http.routers.timeout.middlewares=timeout-strip"
+      - "traefik.http.routers.snappy.tls.certresolver=tlsResolver"
+
+networks:
+  proxy:
+    external: true
