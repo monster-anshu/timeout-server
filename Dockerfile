@@ -52,3 +52,14 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Run the application
 CMD ["./timeout-server"]
+
+# Command line flags that can be overridden:
+# --port=:8080                      # Server port (default: :8080)
+# --min-timeout=1s                  # Minimum timeout for requests (default: 1s)
+# --max-timeout=10s                 # Maximum timeout for requests (default: 10s)
+# --read-timeout=30s                # HTTP read timeout (default: 30s)
+# --write-timeout=30s               # HTTP write timeout (default: 30s)
+# --idle-timeout=120s               # HTTP idle timeout (default: 120s)
+# --max-connections=50000           # Maximum connections (default: 50000)
+# --enable-metrics=true             # Enable metrics endpoint (default: true)
+# --enable-logging=true             # Enable request logging (default: true)

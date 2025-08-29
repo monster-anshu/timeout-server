@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -71,6 +74,48 @@ func defaultConfig() *Config {
 		EnableMetrics: true,
 		EnableLogging: true,
 	}
+}
+
+// Load configuration from command line flags
+func loadConfigFromFlags() *Config {
+	config := defaultConfig()
+	
+	// Define command line flags
+	port := flag.String("port", ":8080", "Server port (with or without colon)")
+	minTimeout := flag.Duration("min-timeout", 1*time.Second, "Minimum timeout for requests")
+	maxTimeout := flag.Duration("max-timeout", 10*time.Second, "Maximum timeout for requests")
+	readTimeout := flag.Duration("read-timeout", 30*time.Second, "HTTP read timeout")
+	writeTimeout := flag.Duration("write-timeout", 30*time.Second, "HTTP write timeout")
+	idleTimeout := flag.Duration("idle-timeout", 120*time.Second, "HTTP idle timeout")
+	maxConns := flag.Int("max-connections", 50000, "Maximum concurrent connections")
+	enableMetrics := flag.Bool("enable-metrics", true, "Enable metrics endpoint")
+	enableLogging := flag.Bool("enable-logging", true, "Enable request logging")
+	
+	// Parse command line flags
+	flag.Parse()
+	
+	// Apply flag values to config
+	if !strings.HasPrefix(*port, ":") {
+		*port = ":" + *port
+	}
+	config.Port = *port
+	config.MinTimeout = *minTimeout
+	config.MaxTimeout = *maxTimeout
+	config.ReadTimeout = *readTimeout
+	config.WriteTimeout = *writeTimeout
+	config.IdleTimeout = *idleTimeout
+	config.MaxConns = *maxConns
+	config.EnableMetrics = *enableMetrics
+	config.EnableLogging = *enableLogging
+	
+	// Validate timeout configuration
+	if config.MinTimeout >= config.MaxTimeout {
+		log.Printf("Warning: min-timeout (%v) >= max-timeout (%v), adjusting max-timeout to %v", 
+			config.MinTimeout, config.MaxTimeout, config.MinTimeout+time.Second)
+		config.MaxTimeout = config.MinTimeout + time.Second
+	}
+	
+	return config
 }
 
 // New server instance
@@ -376,8 +421,11 @@ func main() {
 	// Optimize for high concurrency
 	optimizeForHighConcurrency()
 	
-	// Create server with default config
-	server := NewServer(nil)
+	// Load configuration from command line flags
+	config := loadConfigFromFlags()
+	
+	// Create server with loaded config
+	server := NewServer(config)
 	
 	// Start server in goroutine
 	go func() {
