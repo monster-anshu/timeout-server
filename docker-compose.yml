@@ -8,9 +8,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.timeout.entrypoints=websecure"
-      - "traefik.http.routers.timeout.rule=PathPrefix(`timeout`)"
+      - "traefik.http.routers.timeout.rule=PathPrefix(`/timeout`)"
       - "traefik.http.services.timeout.loadbalancer.server.port=8080"
-      - "traefik.http.middlewares.timeout-strip.stripprefix.prefixes=timeout"
+      - "traefik.http.middlewares.timeout-strip.stripprefix.prefixes=/timeout"
       - "traefik.http.routers.timeout.middlewares=timeout-strip"
       - "traefik.http.routers.snappy.tls.certresolver=tlsResolver"
 
